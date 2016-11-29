@@ -1,0 +1,81 @@
+/**
+ * Created by Zhengfeng.Yao on 16/9/23.
+ */
+import path from 'path';
+import getBabel from './babel.config';
+import webpackMerge from 'webpack-merge';
+import { loadAegisConfig, isValid } from './utils';
+
+const cwd = process.cwd();
+
+function resolvePaths(input){
+  if (input) {
+    if (typeof input == 'string') {
+      return [path.join(cwd, input)];
+    }
+
+    if (Array.isArray(input)) {
+      return input.map(src => path.join(cwd, src));
+    }
+  }
+
+  return [];
+}
+
+export default function getTestWebpackConfig(options) {
+  const config = loadAegisConfig('.test');
+  const { src, testPath } = config;
+  return webpackMerge({
+    devtool: 'inline-source-map',
+
+    resolve: {
+      root: path.resolve(cwd, '.'),
+      extensions: ['', '.webpack.js', '.web.js', '.js', '.jsx', '.json'],
+      modulesDirectories: ['node_modules', path.join(cwd, 'node_modules'), path.join(__dirname, '../node_modules')]
+    },
+
+    resolveLoader: {
+      modulesDirectories: ['node_modules', path.join(cwd, 'node_modules'), path.join(__dirname, '../node_modules')]
+    },
+
+    babel: getBabel(),
+    isparta: {
+      embedSource: true,
+      noAutoWrap: true,
+      babel: getBabel(),
+    },
+
+    module: {
+      loaders: [
+        {
+          test: /\.jsx?$/,
+          include: [
+            ...resolvePaths(src),
+            ...resolvePaths(testPath),
+          ].filter(isValid),
+          exclude: /\.es5\.js$/,
+          loader: 'babel-loader',
+        }, {
+          test: /\.est$/,
+          loader: 'babel-loader!template-string-loader'
+        }, {
+          test: /\.json$/,
+          loader: 'json-loader',
+        }, {
+          test: /\.json5$/,
+          loader: 'json5-loader',
+        }, {
+          test: /\.(woff\d?|ttf|eot|svg|jpe?g|png|gif|txt|css|less|sass|scss|styl)(\?.*)?$/,
+          loader: 'null-loader',
+        }
+      ].filter(isValid),
+      preLoaders: [
+        {
+          test: /\.(js|jsx)$/,
+          loader: 'isparta',
+          include: resolvePaths(src)
+        }
+      ]
+    },
+  }, config.webpack);
+};

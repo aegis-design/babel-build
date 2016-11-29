@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var version = require('../package').version;
+var run = require('../lib/run');
+var build = require('../lib/build');
+var start = require('../lib/start');
+var test = require('../lib/test');
+
+program
+  .version(version, '-v, --version');
+
+program
+  .command('build')
+  .option('-c, --clean', 'clean output dir before build')
+  .option('--dev', 'build development version')
+  .option('--verbose', 'output verbose information')
+  .option('-w, --watch', 'rebuild on file change')
+  .action(function(options) {
+    run(build.bind(undefined, options));
+  });
+
+program
+  .command('start')
+  .option('-c, --clean', 'clean output dir before build')
+  .option('--dev', 'build development version')
+  .option('--node', 'start node server, default webpack dev server.')
+  .action(function(options) {
+    run(start.bind(undefined, options));
+  });
+
+program
+  .command('test')
+  .option('-w, --watch', 'rebuild on file change')
+  .option('--verbose', 'show verbose information')
+  .action(function(options) {
+    run(test.bind(undefined, options));
+  });
+
+program
+  .command('unfreeze')
+  .option('-a, --aggresive', 'version >=')
+  .action(function(options) {
+    run(require('../lib/updater').unfreeze.bind(undefined, options));
+  });
+
+program
+  .command('freeze')
+  .action(function() {
+    run(require('../lib/updater').freeze);
+  });
+
+program.parse(process.argv);
