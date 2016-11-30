@@ -24,7 +24,7 @@ async function copyFiles(source, target , watch) {
     watcher.on('changed', async (file) => {
       const relPath = file.substr(path.join(process.cwd(), source).length);
       console.log(`${relPath} changed`);
-      await ncp(`${paht.join(source, relPath)}`, `${path.join(target, relPath)}`);
+      await ncp(`${path.join(source, relPath)}`, `${path.join(target, relPath)}`);
     });
   }
 }
