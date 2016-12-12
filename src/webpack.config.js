@@ -127,7 +127,7 @@ function getCommonWebpackConfig(dev, web, options, verbose) {
   }
   const query = `{"sourceMap": true, "modifyVars": ${JSON.stringify(theme)}}`;
   return {
-    devtool: web ? (!!dev ? 'cheap-module-eval-source-map' : false) : 'source-map',
+    devtool: options.watch ? 'source-map' : (web ? (!!dev ? 'cheap-module-eval-source-map' : false) : 'source-map'),
     target: target,
     module: {
       loaders: [
@@ -146,7 +146,8 @@ function getCommonWebpackConfig(dev, web, options, verbose) {
         'process.env.NODE_ENV': !!dev ? '"development"' : '"production"',
         __DEV__: !!dev,
         'process.env.BROWSER': web,
-        __BROWSER__: web
+        __BROWSER__: web,
+        __VERSION__: pkg.version || ''
       }),
       ...(web ? [
         new ExtractTextPlugin(options.fileName ? `${options.fileName}.css` : (!!dev ? '[name].css?[hash]' : '[name].[hash].css')),
@@ -179,13 +180,21 @@ export function getBabelWebpackConfig() {
           test: /\.js$/,
           exclude: [
             /\.es5\.js$/,
+            /\.lazy\.js$/,
             /node_modules/
           ],
           loader: 'babel-loader',
         },
         {
           test: /\.jsx$/,
+          exclude: [
+            /\.lazy\.js$/,
+          ],
           loader: 'babel-loader',
+        },
+        {
+          test: /\.lazy\.(js|jsx)$/,
+          loader: 'bundle?lazy!babel-loader'
         },
         {
           test: /\.est$/,
@@ -203,7 +212,7 @@ function genConfig(dev, web, options, verbose) {
 }
 
 export function getWebpackConfig(options) {
-  const { dev, verbose } = options;
+  const { dev, verbose, watch } = options;
   const aegisConfig = loadAegisConfig(dev ? '.dev' : '');
   const baseConfig = getBaseConfig(dev, verbose, aegisConfig.autoprefixer);
   const { web, node } = aegisConfig;
@@ -213,9 +222,11 @@ export function getWebpackConfig(options) {
   }
   const webpackConfigs = [];
   if (web) {
+    web.watch = watch;
     webpackConfigs.push(webpackMerge(baseConfig, genConfig(dev, true, web, verbose)));
   }
   if (node) {
+    node.watch = watch;
     webpackConfigs.push(webpackMerge(baseConfig, genConfig(dev, false, node, verbose)));
   }
   return webpackConfigs;

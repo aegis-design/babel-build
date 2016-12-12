@@ -18,7 +18,7 @@ module.exports = async function start(options) {
   const webpackConfig = getWebpackConfig(options);
   if (options.clean) {
     const dirs = webpackConfig.map(config => config.output.path);
-    await run(clean.bind(undefined, dirs));
+    await run(clean.bind(undefined, dirs, options.force));
   }
   const aegisConfig = loadAegisConfig(options.dev ? '.dev' : '');
   if (aegisConfig.copy) {

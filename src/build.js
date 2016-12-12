@@ -12,7 +12,7 @@ module.exports = async function build(options) {
   if (options.clean) {
     const webpackConfig = getWebpackConfig(options);
     const dirs = webpackConfig.map(config => config.output.path);
-    await run(clean.bind(undefined, dirs));
+    await run(clean.bind(undefined, dirs, options.force));
   }
   const config = loadAegisConfig(options.dev ? '.dev' : '');
   if (config.copy) {

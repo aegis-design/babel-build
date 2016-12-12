@@ -3,6 +3,6 @@
  */
 import del from 'del';
 
-module.exports = async function clean(dirs) {
-  await del(dirs, { dot: true });
+module.exports = async function clean(dirs, force) {
+  await del(dirs, { force: !!force });
 };
