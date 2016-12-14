@@ -10,6 +10,7 @@ export default function getBabel() {
       require.resolve('babel-preset-stage-1'),
     ],
     plugins: [
+      require.resolve('babel-plugin-mobx-deep-action'),
       require.resolve('babel-plugin-transform-decorators-legacy'),
       require.resolve('babel-plugin-transform-runtime')
     ],
